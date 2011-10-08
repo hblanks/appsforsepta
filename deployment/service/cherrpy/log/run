@@ -1,0 +1,4 @@
+#!/bin/bash
+
+mkdir -p main && chown ubuntu main
+exec chpst -uubuntu svlogd -tt ./main

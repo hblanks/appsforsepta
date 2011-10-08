@@ -1,0 +1,9 @@
+A couple more API's for the Apps for Septa Hackathon. Of note are:
+
+    - JSONP for bus locations, e.g.:
+
+        /app/transitview/bus_route_data/42?callback=f
+
+    - JSON/JSONP interface to the Septa trip planner, e.g.:
+
+        /app/tripplanner/?from=4500%20osage%20ave%20philadelphia,%20pa&to=broad%20and%20south

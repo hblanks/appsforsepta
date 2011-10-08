@@ -1,0 +1,3 @@
+.DS_Store
+*.pyc
+deployment/service/cherrpy/log/main/*
