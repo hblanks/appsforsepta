@@ -196,6 +196,8 @@ class TripPlannerJsonProxy(object):
         if not kwargs.get('from') or not kwargs.get('to'):
             raise ValueError
 
+        cherrypy.response.headers['content-type'] = 'text/javascript'
+
         trips = get_trips(kwargs['from'], kwargs['to'])
         trips_json = json.dumps(trips)
         callback = kwargs.get('callback')

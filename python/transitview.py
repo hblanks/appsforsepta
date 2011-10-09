@@ -14,6 +14,9 @@ class TransitViewProxy(object):
         """
         Simple JSONP passthrough for transitview/bus_route_data/.
         """
+
+        cherrypy.response.headers['content-type'] = 'text/javascript'
+
         data = urllib2.urlopen('%s/%s' % (ROOT_URL, route)).read()
         if callback is None:
             return data
