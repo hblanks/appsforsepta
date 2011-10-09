@@ -2,7 +2,7 @@
 
 GIT_DIR=/home/ubuntu/git/appsforsepta
 
-aptitude -y install screen git
+aptitude -y install git
 
 mkdir -p $GIT_DIR
 git clone git://github.com/hblanks/appsforsepta.git $GIT_DIR

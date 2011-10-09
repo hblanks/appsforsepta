@@ -4,7 +4,6 @@ GIT_DIR=/home/ubuntu/git/appsforsepta
 
 aptitude install -y \
     build-essential \
-    git \
     libevent-dev \
     libxml2-dev \
     libxslt1-dev \
