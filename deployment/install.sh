@@ -13,9 +13,10 @@ aptitude install -y \
     python-pip \
     runit
 
-# Cherrypy & gevent
-pip install greenlet  
-pip install cherrypy gevent lxml ipython pytz
+# Python packages
+pip install greenlet
+pip install cherrypy gevent lxml pytz
+HOME=/root/ pip install ipython # requires $HOME for soem reason
 
 # Hokey launch of uwsgi
 # nohup uwsgi --socket 127.0.0.1:3031 --chdir /home/ubuntu --pp .. -w app_wsgi \

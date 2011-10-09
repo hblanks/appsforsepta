@@ -134,8 +134,6 @@ def submit_step_1(origin, destination):
     query = urllib.urlencode(querydict)
     url = '%s?%s' % (QUERY_URL, query)
     lx = lxml.html.parse(urllib2.urlopen(url))
-    with open('/usr/share/nginx/www/fie.html', 'w') as f:
-        f.write(lxml.html.tostring(lx))
     return get_first_match(lx, step_1_form_sel)
 
 def submit_step_2(form):
@@ -151,8 +149,6 @@ def submit_step_2(form):
     url = form.attrib['action']
     data = urllib.urlencode(querydict)
     lx = lxml.html.parse(urllib2.urlopen(url, data))
-    with open('/usr/share/nginx/www/foo.html', 'w') as f:
-        f.write(lxml.html.tostring(lx))
 
     form = get_first_match(lx, result_form_sel)
     querydict = dict(form.form_values())
