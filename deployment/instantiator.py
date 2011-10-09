@@ -82,6 +82,21 @@ def wait_for_first_instance(reservation):
             '\n    '.join(fingerprints)
             )
 
+def list(conn):
+    groups = [
+        g for g in conn.get_all_security_groups() if g.name == SECURITY_GROUP]
+    if groups:
+        sg = groups[0]
+        for instance in sg.instances():
+            output = instance.get_console_output().output
+            if output:
+                fingerprints = extract_host_fingerprints(output)
+                if fingerprints:
+                    print instance.public_dns_name
+                    print 'host key fingerprints are:\n    %s' % (
+                        '\n    '.join(fingerprints)
+                        )
+
 def teardown(conn):
     groups = [
         g for g in conn.get_all_security_groups() if g.name == SECURITY_GROUP]
@@ -98,7 +113,7 @@ def teardown(conn):
 
 if __name__ == '__main__':
     options, args = parser.parse_args()
-    if len(args) != 1 or args[0] not in ('launch', 'teardown'):
+    if len(args) != 1 or args[0] not in ('launch', 'list', 'teardown'):
         parser.print_help()
         sys.exit(1)
     command = args[0]
@@ -114,5 +129,7 @@ if __name__ == '__main__':
 
         reservation = launch_instance(conn, key_name, user_data)
         wait_for_first_instance(reservation)
+    elif args[0] == 'list':
+        list(conn)
     else:
         teardown(conn)
