@@ -2,9 +2,11 @@
 # import gevent.monkey
 # gevent.monkey.patch_all()
 
+import calendar
 import datetime
 import json
 import pprint
+import re
 import time
 import urllib
 import urllib2
@@ -23,6 +25,10 @@ import lxutils
 LOCAL_TZ = pytz.timezone('America/New_York')
 
 QUERY_URL = 'http://airs1.septa.org/bin/query.exe/en'
+
+HOUR_PAT = re.compile('(\d\d?):(\d\d)\s+(AM|PM)')
+
+ONE_DAY = datetime.timedelta(days=1)
 
 step_1_form_sel = CSSSelector('form#HFSQuery')
 
@@ -57,11 +63,53 @@ def format_local_time(fmt):
     return LOCAL_TZ.fromutc(datetime.datetime.now()).strftime(fmt)
 
 def parse_select_fields(form):
+    """
+    Returns (key, value) pairs for each <select> element in a form,
+    where value comes from the first <option> in each <select>.
+    """
     return dict(
         (select.name, select.value_options[0])
         for select in form.findall('.//select')
         )
 
+def guess_date(current_dt, hour, minute):
+    """
+    Example:
+    
+        >>> guess_date(datetime.datetime(2009, 1, 1, 13, 30), 15, 43)
+        datetime.datetime(2009, 1, 1, 15, 43)
+        >>> guess_date(datetime.datetime(2009, 1, 1, 23, 30), 1, 43)
+        datetime.datetime(2009, 1, 2, 1, 43)
+        >>> guess_date(datetime.datetime(2009, 1, 2, 1, 30), 22, 43)
+        datetime.datetime(2009, 1, 1, 22, 43)
+    """
+    # Go forward/backward one day if the hour is off
+    if hour - current_dt.hour > 11:
+        current_dt -= ONE_DAY
+    elif current_dt.hour - hour > 11:
+        current_dt += ONE_DAY
+    return current_dt.replace(hour=hour, minute=minute)
+
+def parse_local_time(s):
+    """
+    Takes a local time string. Guesses the date and returns back
+    a UTC datetime.
+    """
+    now = LOCAL_TZ.fromutc(datetime.datetime.now())
+    match = HOUR_PAT.search(s)
+    if not match:
+        raise ValueError('No match for string %s' % s)
+    
+    hour_str, minute_str, ampm = match.groups()
+    if ampm.lower() == 'AM':
+        hour = int(hour_str)
+    else:
+        hour = int(hour_str) + 12
+    minute = int(minute_str)
+    return guess_date(now, hour, minute).astimezone(pytz.utc)
+
+def dt_to_time(dt):
+    return calendar.timegm(dt.timetuple())
 
 ################################ Parsers ###############################
 
@@ -92,18 +140,28 @@ def parse_tr(tr):
         )
 
 def parse_tr_chunk(trs):
+    now = datetime.datetime.now()
     current_step = {}
     for tr in trs:
+        departure_dt = None
         d = parse_tr(tr)
         # TODO: parse times?
         if tr.attrib['class'].endswith(' first'):
             current_step['from'] = d['first station']
-            current_step['departure_time'] = d['timeDep']
             current_step['service'] = d['products']
+            if d['timeDep']:
+                current_step['departure_time'] = d['timeDep']
+                departure_dt = parse_local_time(d['timeDep'])
+                current_step['departure_utc_timestamp'] = dt_to_time(departure_dt)
         elif tr.attrib['class'].endswith(' last'):
             current_step['to'] = d['first station']
-            current_step['arrival_time'] = d['timeArr']
-            yield current_step
+            if d['timeArr']:
+                current_step['arrival_time'] = d['timeArr']
+                current_step['arrival_utc_timestamp'] = dt_to_time(
+                    parse_local_time(d['timeArr'])
+                    )
+            if departure_dt is None or departure_dt > now:
+                yield current_step
             current_step = {}
 
 ############################ Core functions ############################
@@ -209,5 +267,7 @@ class TripPlannerJsonProxy(object):
 ################################ Testing ###############################
 
 if __name__ == '__main__':
-    result = get_trips('broad and south', 'broad and spring garden')
-    pprint.pprint(result)
+    # result = get_trips('broad and south', 'broad and spring garden')
+    # pprint.pprint(result)
+    import doctest
+    doctest.testmod(optionflags=(doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE))
