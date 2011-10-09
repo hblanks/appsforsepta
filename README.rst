@@ -1,4 +1,9 @@
-A couple more API's for the Apps for Septa Hackathon. Of note are:
+============
+appsforsepta
+============
+
+This provides a couple more API's for the Apps for Septa Hackathon,
+with deployment to EC2. Of note are:
 
     - JSONP for bus locations, e.g.:
 
