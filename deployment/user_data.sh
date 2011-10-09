@@ -3,7 +3,7 @@
 aptitude install -y \
     build-essential \
     git \
-    libevent-dev \  
+    libevent-dev \
     libxml2-dev \
     libxslt1-dev \
     nginx-full \
