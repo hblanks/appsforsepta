@@ -4,13 +4,13 @@ import urllib2
 
 ROOT_URL = 'http://www3.septa.org/transitview/bus_route_data/'
 
-class BusRouteJsonpProxy(object):
+class TransitViewProxy(object):
     """
     JSONP proxy for transitview.
     """
 
     @cherrypy.expose
-    def index(self, route, callback=None):
+    def bus_route_data(self, route, callback=None):
         """
         Simple JSONP passthrough for transitview/bus_route_data/.
         """
@@ -19,6 +19,3 @@ class BusRouteJsonpProxy(object):
             return data
         else:
             return '%s(%s);' % (callback, data)
-
-class TransitViewProxy(object):
-    bus_route_data = BusRouteJsonpProxy()

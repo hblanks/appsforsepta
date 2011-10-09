@@ -27,7 +27,7 @@ cat > /etc/nginx/sites-enabled/default <<EOF
 server {
     listen       80;
     root         /usr/share/nginx/www;
-    location /app {
+    location /app/ {
         proxy_pass http://localhost:8000/;
     }
 }
