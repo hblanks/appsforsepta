@@ -1,2 +1,4 @@
 .DS_Store
 *.pyc
+deployment/service/cherrpy/supervise/*
+deployment/service/cherrpy/log/supervise/*
