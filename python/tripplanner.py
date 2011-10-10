@@ -104,7 +104,9 @@ def parse_local_time(s):
     if ampm.lower() == 'AM':
         hour = int(hour_str)
     else:
-        hour = int(hour_str) + 12
+        hour = int(hour_str)
+        if hour != 12:
+            hour += 12
     minute = int(minute_str)
     return guess_date(now, hour, minute).astimezone(pytz.utc)
 
