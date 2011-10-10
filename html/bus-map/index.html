@@ -1,0 +1,160 @@
+<html>
+<head>
+	<title>SEPTA Google Maps API</title>
+</head>
+<body>
+
+<div id="map_canvas" ></div>
+
+
+	<script src="http://maps.google.com/maps?file=api&v=2&sensor=true&key=ABQIAAAAzkFhlxeqwyhf8h7dq47GWhRMoFxuwrud8syaiuEVNfUAsvpNAhQpykrr8yRuVgXXCKLSg_mu4Fqt7A" type="text/javascript"></script>
+	<script type="text/javascript">
+	// ABQIAAAAzkFhlxeqwyhf8h7dq47GWhRMoFxuwrud8syaiuEVNfUAsvpNAhQpykrr8yRuVgXXCKLSg_mu4Fqt7A
+
+	var map; // Define map for global access.
+	var currentCallbackUrl;
+
+	function send_with_jsonp(){
+		console.log('Now Collecting Data: ' + currentCallbackUrl);
+        var head = document.getElementsByTagName('head')[0];
+        if (head) {
+	        var script = document.createElement('script');
+	        script.src = window.currentCallbackUrl;
+			console.log('Current Callback Url: ' + window.currentCallbackUrl);
+	        head.appendChild(script);
+			console.log('Current url request made!');
+        }
+	}
+
+	function jsonp_handler(data) {
+		console.log('jsonp_handler called');
+        var divId = 'jsonDataDiv';
+        var targDiv;
+        if (!document.getElementById(divId)) {
+		var pollyLatLn = [];
+			var busIcon = new GIcon();
+			map.clearOverlays();
+
+			busIcon.image = "http://hnhmm.com/septahack/bus-tour.png";
+			busIcon.iconSize = new GSize(32, 37);
+			busIcon.iconAnchor = new GPoint(16, 37);
+			var markerOptions = { icon:busIcon };
+
+		for(var i = 0; i < data.bus.length; i++){
+				var point = new GLatLng(data.bus[i].lat, data.bus[i].lng);
+				map.addOverlay(new GMarker(point, markerOptions));
+		}
+
+			map.addOverlay(new GMarker(point, markerOptions));
+       }
+	}
+
+	window.jsonp_handler = jsonp_handler; // export as global func
+	console.log('Global Handler Defined');
+
+	function successHandler(location) {
+		console.log('http://ec2-184-73-6-208.compute-1.amazonaws.com/app/transitview/bus_route_data/42');
+		var mapDiv = document.getElementById("map_canvas");
+		mapDiv.style.width = window.innerWidth + 'px';
+		mapDiv.style.height = window.innerHeight + 'px';
+		document.body.style.margin = 0;
+		mapDiv.style.margin = 0;
+		map = new GMap2(mapDiv);
+		map.setCenter(new GLatLng(location.coords.latitude,location.coords.longitude), 13);
+
+
+		var walkIcon = new GIcon();
+		walkIcon.image = "http://hnhmm.com/septahack/walking-tour.png";
+		walkIcon.iconSize = new GSize(32, 37);
+		walkIcon.iconAnchor = new GPoint(16, 37);
+		var walkerOptions = { icon:walkIcon };
+
+		var point = new GLatLng(location.coords.latitude,location.coords.longitude);
+		map.addOverlay(new GMarker(point, walkerOptions));
+
+		var septaRouts = [];
+		var controlsDiv = document.createElement('div');
+		controlsDiv.style.border = 'solid 1px #000';
+		controlsDiv.style.padding = '10px';
+		controlsDiv.style.top = '10px';
+		controlsDiv.style.left = '10px';
+		controlsDiv.style.position = 'absolute';
+		var septaRoutsPulldown = document.createElement('select');
+		var septaSubmit = document.createElement('input');
+		septaSubmit.value = 'Change Rout';
+		septaSubmit.type = 'button';
+
+
+septaRoutsPulldown.addEventListener('click',
+	function(){
+		console.log('Changing Rout!');
+		var chosenoption = septaRoutsPulldown.options[this.selectedIndex];
+		window.currentCallbackUrl = 'http://ec2-184-73-6-208.compute-1.amazonaws.com/app/transitview/bus_route_data/' + chosenoption.value + '?callback=jsonp_handler';
+		console.log('Change Rout!');
+		send_with_jsonp();
+	}
+)
+		// septaSubmit.onClick = function(){
+		// 	console.log('Changing Rout!');
+		// 	var chosenoption = septaRoutsPulldown.options[this.selectedIndex];
+		// 	window.currentCallbackUrl = 'http://ec2-184-73-6-208.compute-1.amazonaws.com/app/transitview/bus_route_data/' + chosenoption.value + '?callback=jsonp_handler';
+		// 	console.log('Change Rout!');
+		// };
+
+
+
+		var septaRouts = [];
+		var septaRoutNames = ['BSO','BSS','C','G','HXH','J','K','L','LUCYGO','LUCYGR','MFL','MFO','NHSL','R','1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','17','18','19','20','21','22','23','24','25','26','27','28','29','30','32','31','33','34','35','36','37','38','39','40','42','43','44','46','47','47M','48','50','52','53','54','55','56','57','58','59','60','61','62','64','65','66','67','68','70','71','73','75','77','78','79','80','84','88','89','90','91','92','93','94','95','96','97','98','99','101','102','103','104','105','106','107','108','108','109','110','111','112','113','114','115','116','117','118','119','120','123','124','125','126','127','128','129','130','131','132','134','139','13B','150','201','204','205','206','304','306','310','312','314'];
+
+console.log('Rout Count: ' + septaRouts.length);
+		for (var i = 0; i < septaRoutNames.length; i++) {
+		    console.log('Making: ' + i);
+			septaRouts[i] = document.createElement('option');
+			septaRouts[i].value = septaRoutNames[i];
+			septaRouts[i].innerHTML = septaRoutNames[i];
+
+			septaRoutsPulldown.appendChild(septaRouts[i]);
+		};
+		septaRoutsPulldown.id = 'septa_Routs_Pulldown_1';
+
+septaRoutsPulldown.addEventListener('change',function(){
+			var chosenoption=this.options[this.selectedIndex];
+			window.currentCallbackUrl = 'http://ec2-184-73-6-208.compute-1.amazonaws.com/app/transitview/bus_route_data/' + chosenoption.value + '?callback=jsonp_handler';
+			console.log('Display rout: ' + currentCallbackUrl);
+		});
+
+		// septaRoutsPulldown.onChange = function(){
+		// 	var chosenoption=this.options[this.selectedIndex];
+
+		// 	window.currentCallbackUrl = 'http://ec2-184-73-6-208.compute-1.amazonaws.com/app/transitview/bus_route_data/' + chosenoption.value + '?callback=jsonp_handler';
+		// 	console.log('Display rout: ' + currentCallbackUrl);
+		// };
+
+		controlsDiv.appendChild(septaRoutsPulldown);
+		controlsDiv.appendChild(septaSubmit);
+
+		document.body.appendChild(controlsDiv);
+
+		// var the_url = "http://ec2-184-73-6-208.compute-1.amazonaws.com/app/transitview/bus_route_data/42";
+		window.currentCallbackUrl = 'http://ec2-184-73-6-208.compute-1.amazonaws.com/app/transitview/bus_route_data/17?callback=jsonp_handler'
+
+		send_with_jsonp();
+		window.jsonpInterval = window.setInterval(function() {
+			if (window.currentCallbackUrl) {
+				send_with_jsonp();
+			}
+		}, 4000);
+
+	}
+
+	function errorHandler(error) {
+	    alert('Attempt to get location failed: ' + error.message);
+	}
+
+
+	navigator.geolocation.getCurrentPosition(successHandler, errorHandler);
+
+
+	</script>
+</body>
+</html>
